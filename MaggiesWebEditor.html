@@ -1,0 +1,228 @@
+<body><script>console.log = function(msg){window.parent.}</script><div class="top">
+  <div class="sidebar">
+    <textarea
+      placeholder="HTML"
+      name="html"
+      id="html"
+      cols="30"
+      rows="10"
+      spellcheck="false"
+    ></textarea>
+    <textarea
+      placeholder="CSS"
+      name="css"
+      id="css"
+      cols="30"
+      rows="10"
+      spellcheck="false"
+    ></textarea>
+    <textarea        
+      placeholder="JS"
+      name="js"
+      id="js"
+      cols="30"
+      rows="10"
+      spellcheck="false"
+    ></textarea>
+  </div>
+
+  <div class="previewDiv"><iframe id="preview" srcdoc=""></iframe></div>
+</div>
+
+<div class="controls">
+  <button id="run">run</button>
+  <span class="sep">|</span>
+  <input type="checkbox" name="" id="autoPreview" /> Auto Preview
+  <span class="sep">|</span>
+  <input type="number" value="1000" name="" id="repeatDelay" /> Repeat Delay
+  <span class="sep">|</span>
+  <button id="save">save</button>
+</div>
+<div id="console"></div>
+
+
+<style>/*--------------------//
+And here you've stumbled upon the CSS of this unkempt program, avert your eyes, for there are many hacky unpretty solutions here that may take some time to be fixed.
+
+Reader discretion is advised.
+//--------------------*/
+
+.top {
+width: calc(100vw - 24px);
+}
+
+.sep {
+  color: gray;
+}
+
+body {
+  margin-right: 0;
+}
+
+* {
+  font-family: monospace;
+}
+
+.sidebar {
+  width: calc(50vw - 5px);
+  height: 90vh;
+  display: inline-block;
+}
+
+.sidebar > textarea {
+ width: calc(100% - 10px);
+ height: calc(100%/3 - 10px);
+text-wrap: nowrap;
+}
+
+.previewDiv {
+width: calc(50vw - 20px);
+height: 90vh;
+float: right;
+}
+
+iframe {
+width: 100%;
+height: 90vh;
+outline: 1px solid black;
+border: none;
+display: inline-block;
+}
+
+.controls {
+width: calc(100vw - 10px);
+height: calc(10vh - 20px);
+}
+
+#ln { 
+  font-size: 1em;
+  padding: 2.5px 3px 0;
+  font-family: monospace;
+  color: white;
+  background: repeating-linear-gradient(gray 1lh, lightgray 1lh, lightgray calc(1lh + 1px), gray calc(1lh + 1px), gray 2lh);
+  width: fit-content;
+  height: 203px;
+  display: inline-block;
+  overflow: hidden;
+  margin: 0;
+  background-attachment: local;
+}</style><script>/*--------------------------------//
+Welcome to Maggie's web editor's Javascript, here be poorly documented code, hacky fixes, and a whole bunch of incomprehensibly named variables (and also dragons)
+
+Travelers beware...
+//-------------------------------*/
+
+
+// Some base variables
+var autoPreview = false;
+var active = false;
+
+// Defining a whole bunch of elements
+htmlInput = document.getElementById("html");
+cssInput = document.getElementById("css");
+jsInput = document.getElementById("js");
+
+iframe = document.getElementById("preview");
+autoPreviewCheckbox = document.getElementById("autoPreview");
+repeatDelay = document.getElementById("repeatDelay");
+console = document.getElementById("console");
+runButton = document.getElementById("run");
+saveButton = document.getElementById("save")
+
+// handle clicking the run button
+runButton.onclick = () => {
+  runCode();
+};
+
+saveButton.onclick = () => {
+    var file = new File([iframe.srcdoc], window.prompt(), {
+    type: 'text/html',
+  })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(file)
+  link.href = url
+  link.download = file.name
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
+}
+
+// Handle user inputs
+htmlInput.addEventListener("keydown", codeEdit);
+cssInput.addEventListener("keydown", codeEdit);
+jsInput.addEventListener("keydown", codeEdit);
+
+// Run the code if the user presses [Ctrl+Enter]
+document.addEventListener("keydown", event => {
+  if (event.ctrlKey && event.code == "Enter") {
+    runCode();
+  }
+});
+
+// Handles what to do after the user is inactive
+function inactive() {
+  active = false;
+  runCode();
+}
+
+// Put the user's code into the iframe
+function runCode() {
+  iframe.srcdoc = `<body><script>console.log = function(msg){window.parent.}<\/script>${
+    htmlInput.value
+  }<style>${cssInput.value}</style><script>${jsInput.value}<\/script></body>`;
+}
+
+// Handle what to do when the user edits code
+function codeEdit(e) {
+  // Check if the auto preview is enabled
+  if (autoPreviewCheckbox.checked && (e.key != "c" && !e.ctrlKey)) {
+    // check to see if the activity timeout already exists, if it does, clear it so we can make a new one
+    if (typeof activeTimeout != "undefined") {
+      clearTimeout(activeTimeout);
+    }
+    active = true;
+    activeTimeout = setTimeout(inactive, repeatDelay.value);
+  }
+  // Indent forwards
+  if (e.ctrlKey && e.key == "]") {
+    e.preventDefault();
+    selStart = e.currentTarget.selectionStart;
+    selEnd = e.currentTarget.selectionEnd;
+    // do some stuff to get position of the start of the current line
+    linePos = e.currentTarget.value
+      .substr(0, e.currentTarget.selectionStart)
+      .split("\n")
+      .slice(0, -1)
+      .join().length;
+    if (linePos != 0) {
+      linePos++;
+    }
+    // a hacky way to keep the undo history, need to improve later
+    e.currentTarget.setSelectionRange(linePos, linePos);
+    document.execCommand("insertText", false, "  ");
+    e.currentTarget.setSelectionRange(selStart + 2, selEnd + 2);
+  // Indent backwards, also checks to make sure there's an indent to remove
+  } else if (e.ctrlKey && e.key == "[" && e.currentTarget.value.split("\n")[e.currentTarget.value.substr(0, e.currentTarget.selectionStart).split("\n").length - 1].match(/^  /)
+  ) {
+    e.preventDefault();
+    selStart = e.currentTarget.selectionStart;
+    selEnd = e.currentTarget.selectionEnd;
+    linePos = e.currentTarget.value
+      .substr(0, e.currentTarget.selectionStart)
+      .split("\n")
+      .slice(0, -1)
+      .join().length;
+    if (linePos != 0) {
+      linePos++;
+    }
+    // still so very hacky...
+    e.currentTarget.setSelectionRange(linePos, linePos + 2);
+    document.execCommand("delete", false);
+    e.currentTarget.setSelectionRange(selStart - 2, selEnd - 2);
+  //just add a tab
+  } else if (e.key == "Tab") {
+    e.preventDefault();
+    document.execCommand("insertText", true, "  ");
+  }
+}</script></body>
