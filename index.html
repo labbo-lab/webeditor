@@ -36,7 +36,7 @@
   <input type="checkbox" name="" id="autoPreview" /> Auto Preview
   <input type="number" value="1000" name="" id="repeatDelay" /> Repeat Delay
   <br>
-  <input type="text" value="project" name="" id="projectname" /> Name
+  <input type="text" value="untitled project" name="" id="projectname" /> Name
   <button id="download">Download</button>
 </div>
 <div id="console"></div>
@@ -227,9 +227,13 @@ function download(text,filetype,filename) {
   document.body.removeChild(a)
 }
 
+document.title = "WebEditor | " + titleInput.value
+
 titleInput.oninput = (e) => {
-  document.title = titleInput.value
+  document.title = "WebEditor | " + titleInput.value
 }
+
+  
 
 function save(filename, text, type) {
   var element = document.createElement('a');
