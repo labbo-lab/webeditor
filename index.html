@@ -1,4 +1,6 @@
-<body><div class="top">
+<body></head>
+<body>
+<div class="top">
   <div class="sidebar">
     <textarea
       placeholder="HTML"
@@ -30,66 +32,54 @@
 </div>
 
 <div class="controls">
-  <button id="run">run</button>
-  <span class="sep">|</span>
+  <button id="run">Run</button>
   <input type="checkbox" name="" id="autoPreview" /> Auto Preview
-  <span class="sep">|</span>
-  <input type="number" value="1000" name="" id="repeatDelay" /> Preview Delay
-  <span class="sep">|</span>
-  <button id="save">save</button>
-  <span class="sep">|</span>
-  <span class="info">Ctrl + ] to indent, Ctrl + [ to unindent, Ctrl + Enter to run</span>
+  <input type="number" value="1000" name="" id="repeatDelay" /> Repeat Delay
+  <br>
+  <input type="text" value="project" name="" id="projectname" /> Name
+  <button id="download">Download</button>
 </div>
 <div id="console"></div>
 
 
-<style>/*--------------------//
+
+
+<!--WEBEDITSEPERATESECTION--><style>/*--------------------//
 And here you've stumbled upon the CSS of this unkempt program, avert your eyes, for there are many hacky unpretty solutions here that may take some time to be fixed.
 
 Reader discretion is advised.
 //--------------------*/
 
-.info {
-  color: gray;
-}
-  
-.top {
-width: calc(100vw - 24px);
-}
-
-.sep {
-  color: gray;
-}
-
-body {
-  margin-right: 0;
-}
 
 * {
+margin: none;
   font-family: monospace;
 }
 
+body {
+margin: 0;
+}
+
 .sidebar {
-  width: calc(50vw - 5px);
+  width: 49vw;
   height: 90vh;
   display: inline-block;
 }
 
 .sidebar > textarea {
-  width: calc(100% - 10px);
-  height: calc(100%/3 - 10px);
-  text-wrap: nowrap;
-  resize: none;
+
+ width: 100%;
+ height: calc(100%/3 - 9px);
+text-wrap: nowrap;
 }
 
 .previewDiv {
-width: calc(50vw - 20px);
-height: 90vh;
+width: 50vw;
 float: right;
 }
 
 iframe {
-width: 100%;
+width: 50vw;
 height: 90vh;
 outline: 1px solid black;
 border: none;
@@ -97,8 +87,8 @@ display: inline-block;
 }
 
 .controls {
-width: calc(100vw - 10px);
-height: calc(10vh - 20px);
+width: 100vw;
+height: calc(10vh - 2px);
 }
 
 #ln { 
@@ -113,12 +103,16 @@ height: calc(10vh - 20px);
   overflow: hidden;
   margin: 0;
   background-attachment: local;
-}</style><script>/*--------------------------------//
+}
+</style><!--WEBEDITSEPERATESECTION--><script>/*--------------------------------//
 Welcome to Maggie's web editor's Javascript, here be poorly documented code, hacky fixes, and a whole bunch of incomprehensibly named variables (and also dragons)
 
 Travelers beware...
 //-------------------------------*/
 
+window.onerror = (e) => {
+  alert(e)
+}
 
 // Some base variables
 var autoPreview = false;
@@ -134,26 +128,13 @@ autoPreviewCheckbox = document.getElementById("autoPreview");
 repeatDelay = document.getElementById("repeatDelay");
 console = document.getElementById("console");
 runButton = document.getElementById("run");
-saveButton = document.getElementById("save")
+titleInput = document.getElementById("projectname");
+downloadButton = document.getElementById("download")
 
 // handle clicking the run button
 runButton.onclick = () => {
   runCode();
 };
-
-saveButton.onclick = () => {
-    var file = new File([iframe.srcdoc], window.prompt(), {
-    type: 'text/html',
-  })
-  const link = document.createElement('a')
-  const url = URL.createObjectURL(file)
-  link.href = url
-  link.download = file.name
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  window.URL.revokeObjectURL(url)
-}
 
 // Handle user inputs
 htmlInput.addEventListener("keydown", codeEdit);
@@ -183,7 +164,7 @@ function runCode() {
 // Handle what to do when the user edits code
 function codeEdit(e) {
   // Check if the auto preview is enabled
-  if (autoPreviewCheckbox.checked && (e.key != "c" && !e.ctrlKey)) {
+  if (autoPreviewCheckbox.checked) {
     // check to see if the activity timeout already exists, if it does, clear it so we can make a new one
     if (typeof activeTimeout != "undefined") {
       clearTimeout(activeTimeout);
@@ -232,4 +213,38 @@ function codeEdit(e) {
     e.preventDefault();
     document.execCommand("insertText", true, "  ");
   }
-}</script></body>
+}
+
+function download(text,filetype,filename) {
+  var blob = new Blob([text], {type:filetype});
+  var a = document.createElement('a');
+  a.download = fileName
+  a.href = URL.createObjectURL(blob)
+  a.dataset.downloadurl = [filetype, a.download, a.href].join(':')
+  a.style.display = "none"
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+}
+
+titleInput.oninput = (e) => {
+  window.title = titleInput.value
+}
+
+function save(filename, text, type) {
+  var element = document.createElement('a');
+  element.setAttribute('href', `data:text/${type};charset=utf-8,` + encodeURIComponent(text));
+  element.setAttribute('download', filename);
+  element.style.display = 'none';
+  document.documentElement.appendChild(element);
+  element.click();
+  document.documentElement.removeChild(element);
+}
+
+
+
+downloadButton.onclick = (e) => {
+  save(titleInput.value + ".html", `<body>${htmlInput.value}<!--WEBEDITSEPERATESECTION--><style>${cssInput.value}</style><!--WEBEDITSEPERATESECTION--><script>${jsInput.value}<\/script></body>`,"html")
+}
+
+</script></body>
