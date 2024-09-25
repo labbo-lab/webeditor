@@ -1,3 +1,5 @@
+# Lucki's Web Editor!
+
 ## Keyboard Shortcuts
 
 | Function | Shortcut |
