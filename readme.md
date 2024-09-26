@@ -23,7 +23,8 @@ This is my own custom made web editor!
     - [ ] JS
 - [ ] File storage + upload
 - [ ] Syntax highlighting
-- [ ] Multiple projects with a project selection ui, store locally
+- [ ] Panel UI system
+- [ ] Multiple projects with a project selection UI, store locally
 - [ ] Cloud based storage, accounts
 - [ ] Web hosting
 - [ ] A community to share projects
